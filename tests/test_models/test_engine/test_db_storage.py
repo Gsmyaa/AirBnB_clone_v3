@@ -65,6 +65,32 @@ class TestDBStorage(unittest.TestCase):
         query_rows = self.query.fetchall()
         self.assertEqual(len(query_rows), 1)
 
+    @unittest.skipIf(os.getenv('HBNB_TYPE_STORAGE') != 'db',
+                     "not testing db storage")
+    def test_get(self):
+        """Test that get returns specific object, or none"""
+        newState = State(name="New York")
+        newState.save()
+        newUser = User(email="bob@foobar.com", password="password")
+        newUser.save()
+        self.assertIs(newState, models.storage.get("State", newState.id))
+        self.assertIs(None, models.storage.get("State", "blah"))
+        self.assertIs(None, models.storage.get("blah", "blah"))
+        self.assertIs(newUser, models.storage.get("User", newUser.id))
+
+    @unittest.skipIf(os.getenv('HBNB_TYPE_STORAGE') != 'db',
+                     "not testing db storage")
+    def test_count(self):
+        """add new object to db"""
+        startCount = models.storage.count()
+        self.assertEqual(models.storage.count("Blah"), 0)
+        newState = State(name="Montevideo")
+        newState.save()
+        newUser = User(email="ralexrivero@gmail.com.com", password="dummypass")
+        newUser.save()
+        self.assertEqual(models.storage.count("State"), startCount + 1)
+        self.assertEqual(models.storage.count(), startCount + 2)
+
 
 if __name__ == "__main__":
     unittest.main()
